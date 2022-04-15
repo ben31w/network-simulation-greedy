@@ -33,5 +33,5 @@ class NodeObj:
         """
         Return string representation of this node. Just here for basic debugging.
         """
-        return f"ID: {self.node_id}; Status: {self.status}; CPU: {self.cpu}; " \
+        return f"Node ID: {self.node_id}; Status: {self.status}; CPU: {self.cpu}; " \
                f"Memory: {self.memory}; Buffer: {self.buffer}; Cost: {self.cost}"

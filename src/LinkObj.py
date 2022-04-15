@@ -21,3 +21,10 @@ class LinkObj:
         self.source_node = source_node
         self.dest_node = dest_node
         self.bandwidth = bandwidth
+
+    def __str__(self):
+        """
+        Return string representation of this link. Just here for basic debugging.
+        """
+        return f"Link ID:{self.link_id}; Source Node:{self.source_node}; " \
+               f"Destination Node: {self.dest_node}; Bandwidth: {self.bandwidth}"
