@@ -28,3 +28,10 @@ class NodeObj:
         self.memory = memory
         self.buffer = buffer
         self.cost = cost
+
+    def __str__(self):
+        """
+        Return string representation of this node. Just here for basic debugging.
+        """
+        return f"ID: {self.node_id}; Status: {self.status}; CPU: {self.cpu}; " \
+               f"Memory: {self.memory}; Buffer: {self.buffer}; Cost: {self.cost}"
