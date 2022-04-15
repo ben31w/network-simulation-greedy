@@ -72,14 +72,20 @@ def get_nodes_from_file(filepath):
 
 
 if __name__ == '__main__':
+    # Read input files and get the nodes and links
     node_filepath = "../data/NodeInputData.csv"
     nodes = get_nodes_from_file(node_filepath)
-    for node in nodes:
-        print(node)
-
     link_filepath = "../data/LinkInputData.csv"
     links = get_links_from_file(link_filepath, nodes)
+    for node in nodes:
+        print(node)
     for link in links:
         print(link)
 
+    # Graph the nodes and links (we just need the IDs, not the objects)
     GRAPH = nx.Graph()
+    graph_links = [[link.source_node.node_id, link.dest_node.node_id] for link in links]
+    graph_nodes = [node.node_id for node in nodes]
+    GRAPH.add_edges_from(graph_links)
+    nx.draw(GRAPH, with_labels=True, font_weight='bold')
+    plt.show()
