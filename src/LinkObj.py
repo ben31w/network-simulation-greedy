@@ -26,5 +26,5 @@ class LinkObj:
         """
         Return string representation of this link. Just here for basic debugging.
         """
-        return f"Link ID:{self.link_id}; Source Node:{self.source_node}; " \
-               f"Destination Node: {self.dest_node}; Bandwidth: {self.bandwidth}"
+        return f"Link ID: {self.link_id}; <SRC: {self.source_node}>; " \
+               f"<DEST: {self.dest_node}>; Bandwidth: {self.bandwidth}"

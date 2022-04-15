@@ -20,6 +20,7 @@ def get_links_from_file(filepath, nodes):
     :return:
     """
     links = []
+    sorted_nodes = sorted(nodes)
     with open(filepath) as f:
         reader = csv.reader(f, delimiter=';')
         next(reader, None)  # skip the first line
@@ -27,10 +28,12 @@ def get_links_from_file(filepath, nodes):
             link_id = line[0]
             bandwidth = line[3]
 
-            source_node_id = int(line[1])
-            source_node = nodes[source_node_id]
-            dest_node_id = int(line[2])
-            dest_node = nodes[dest_node_id]
+            # Input file gives the node IDs of src and destination, which is off
+            # by 1 from the indices in sorted nodes list.
+            source_node_index = int(line[1]) - 1
+            source_node = sorted_nodes[source_node_index]
+            dest_node_index = int(line[2]) - 1
+            dest_node = sorted_nodes[dest_node_index]
 
             new_link = LinkObj(link_id, source_node, dest_node, bandwidth)
             links.append(new_link)
@@ -46,9 +49,8 @@ def get_nodes_from_file(filepath):
         reader = csv.reader(f, delimiter=';')
         next(reader, None)  # skip the first line
         for line in reader:
-            # # (self, node_id, status, cpu, memory, buffer, cost):
-            node_id = line[0]
-            cost = line[6]
+            node_id = int(line[0])
+            cost = int(line[6])
 
             # 'A' means the node is active
             if line[3] == 'A':
@@ -66,20 +68,17 @@ def get_nodes_from_file(filepath):
 
             new_node = NodeObj(node_id, status, cpu, memory, buffer, cost)
             nodes.append(new_node)
-
     return nodes
 
 
 if __name__ == '__main__':
     node_filepath = "../data/NodeInputData.csv"
     nodes = get_nodes_from_file(node_filepath)
-
     for node in nodes:
         print(node)
 
     link_filepath = "../data/LinkInputData.csv"
     links = get_links_from_file(link_filepath, nodes)
-
     for link in links:
         print(link)
 

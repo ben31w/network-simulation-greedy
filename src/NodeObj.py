@@ -22,12 +22,20 @@ class NodeObj:
             the cost that this node will add to each request mapped through it
             (integer)
         """
-        self.node_id = node_id
+        self.node_id = int(node_id)
         self.status = status
-        self.cpu = cpu
-        self.memory = memory
-        self.buffer = buffer
-        self.cost = cost
+        self.cpu = int(cpu)
+        self.memory = int(memory)
+        self.buffer = int(buffer)
+        self.cost = int(cost)
+
+    def __lt__(self, other):
+        """
+        Compare two node objects by comparing their IDs.
+        :param other: the other node being compared to this node.
+        :return: 1 if this node's ID < other node's ID
+        """
+        return self.node_id < other.node_id
 
     def __str__(self):
         """
