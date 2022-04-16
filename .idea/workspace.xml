@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ac28f3ba-241c-436c-84b4-cc781ffcf88a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/LinkObj.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/LinkObj.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/NodeObj.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/NodeObj.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -24,7 +27,7 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "/home/ben31w/Desktop/cpsc250/w8-classes-f20"
+    "last_opened_file_path": "/home/ben31w/git/network-simulation-single-mapping"
   }
 }]]></component>
   <component name="RecentsManager">

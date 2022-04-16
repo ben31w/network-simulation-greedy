@@ -27,6 +27,8 @@ def get_links_from_file(filepath, nodes):
         for line in reader:
             link_id = line[0]
             bandwidth = line[3]
+            edge_delay = float(line[4])
+            edge_cost = int(line[5])
 
             # Input file gives the node IDs of src and destination, which is off
             # by 1 from the indices in sorted nodes list.
@@ -35,7 +37,8 @@ def get_links_from_file(filepath, nodes):
             dest_node_index = int(line[2]) - 1
             dest_node = sorted_nodes[dest_node_index]
 
-            new_link = LinkObj(link_id, source_node, dest_node, bandwidth)
+            new_link = LinkObj(link_id, source_node, dest_node, bandwidth,
+                               edge_delay, edge_cost)
             links.append(new_link)
     return links
 
@@ -50,7 +53,8 @@ def get_nodes_from_file(filepath):
         next(reader, None)  # skip the first line
         for line in reader:
             node_id = int(line[0])
-            cost = int(line[6])
+            processing_delay = int(line[5])
+            processing_cost = int(line[6])
 
             # 'A' means the node is active
             if line[3] == 'A':
@@ -66,7 +70,8 @@ def get_nodes_from_file(filepath):
             memory = int(resources_list[1])
             buffer = int(resources_list[2])
 
-            new_node = NodeObj(node_id, status, cpu, memory, buffer, cost)
+            new_node = NodeObj(node_id, status, cpu, memory, buffer,
+                               processing_delay, processing_cost)
             nodes.append(new_node)
     return nodes
 
