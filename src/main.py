@@ -13,11 +13,11 @@ from RequestObj import RequestObj
 
 def get_links_from_file(filepath, nodes):
     """
-    Return a list of links from the input file. Pass in a list of nodes so the
-    links source and destination fields can be defined.
-    :param filepath:
-    :param nodes:
-    :return:
+    Return a list of links from the input file. Pass in a list of nodes to set
+    the links' source and destination fields.
+    :param filepath: csv file to read links from
+    :param nodes:    list of nodes that the links will connect to
+    :return:         list of links
     """
     links = []
     sorted_nodes = sorted(nodes)
@@ -74,6 +74,21 @@ def get_nodes_from_file(filepath):
                                processing_delay, processing_cost)
             nodes.append(new_node)
     return nodes
+
+
+def get_requests_from_file(filepath):
+    """
+    Return a list of requests from the input file.
+    :param filepath:
+    :return:
+    """
+    requests = []
+    with open(filepath) as f:
+        reader = csv.reader(f, ';')
+        next(reader, None)  # skip the first line
+        for line in reader:
+            request_id = int(line[0])
+
 
 
 if __name__ == '__main__':
