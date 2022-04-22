@@ -25,3 +25,12 @@ class RequestObj:
         self.dest_node = dest_node
         self.requested_resources = list(requested_resources)  # same for CPU, RAM, and buffer
         self.requested_bandwidth = int(requested_bandwidth)
+
+    def __str__(self):
+        """
+        Return string representation of this request. Just here for basic debugging.
+        """
+        return f"Request ID: {self.request_id}; <SRC: {self.source_node}>;" \
+               f"<DEST: {self.dest_node}>; " \
+               f"Requested Resources: {self.requested_resources}; " \
+               f"Requested Bandwidth: {self.requested_bandwidth}"

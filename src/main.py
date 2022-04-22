@@ -99,8 +99,12 @@ def get_requests_from_file(filepath, nodes):
             # Turn "['F4', 'F1', 'F3']" into a list using ast
             # Then compile the requested resources of each function into a list
             functions = ast.literal_eval(line[3])
-            functions_resources = get_requested_resources_from_functions(functions)
-            
+            requested_resources = get_requested_resources_from_functions(functions)
+
+            new_request = RequestObj(request_id, source_node, dest_node,
+                                     requested_resources, requested_bandwidth)
+            requests.append(new_request)
+
     return requests
 
 
@@ -134,8 +138,6 @@ if __name__ == '__main__':
         print(node)
     for link in links:
         print(link)
-    requests_filepath = "../data/RequestInputData.txt"
-    requests = get_requests_from_file(requests_filepath, nodes)
 
     # Graph the nodes and links (we just need the IDs, not the objects)
     GRAPH = nx.Graph()
@@ -144,5 +146,11 @@ if __name__ == '__main__':
     GRAPH.add_edges_from(graph_links)
     nx.draw(GRAPH, with_labels=True, font_weight='bold')
     plt.show()
+
+    # Read input file and get the requests
+    requests_filepath = "../data/RequestInputData.txt"
+    requests = get_requests_from_file(requests_filepath, nodes)
+    for request in requests:
+        print(request)
 
 
