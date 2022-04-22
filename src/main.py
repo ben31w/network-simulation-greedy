@@ -76,19 +76,52 @@ def get_nodes_from_file(filepath):
     return nodes
 
 
-def get_requests_from_file(filepath):
+def get_requests_from_file(filepath, nodes):
     """
     Return a list of requests from the input file.
     :param filepath:
     :return:
     """
     requests = []
+    sorted_nodes = sorted(nodes)
     with open(filepath) as f:
         reader = csv.reader(f, ';')
         next(reader, None)  # skip the first line
         for line in reader:
             request_id = int(line[0])
+            requested_bandwidth = int(line[4])
 
+            # Input file gives the node IDs of src and destination, which is off
+            # by 1 from the indices in sorted nodes list.
+            source_node_index = int(line[1]) - 1
+            source_node = sorted_nodes[source_node_index]
+            dest_node_index = int(line[2]) - 1
+            dest_node = sorted_nodes[dest_node_index]
+
+            functions_string = line[3][1: len(line[3]) - 1]
+            functions_string_as_list = functions_string.split(',')
+
+    return requests
+
+
+def get_requested_resources_from_functions(functions):
+    """
+    Helper method.
+    Receive a list of functions in the form
+        ['F1', 'F5', 'F3', etc.]
+    Return a list of integers in the form
+        [1, 5, 3, etc.]     where each integer is the requested resources of
+                            each function. The requested resources is the CPU,
+                            Memory, and Buffer that will be allocated from the
+                            node that processes this function.
+    :param functions: list of functions
+    :return: list of the requested resources for each function
+    """
+    resources = []
+    for function in functions:
+        requested_resources = int(function[1])
+        resources.append(requested_resources)
+    return resources
 
 
 if __name__ == '__main__':
