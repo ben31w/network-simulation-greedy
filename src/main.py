@@ -1,6 +1,7 @@
 """
 
 """
+import ast
 import csv
 # Need these for path finding and graphing
 import networkx as nx   # K-shortest paths library
@@ -62,13 +63,10 @@ def get_nodes_from_file(filepath):
             else:
                 status = False
 
-            # Turn "[100, 100, 100]" into "100, 100, 100", then split the
-            # string into a list using the commas
-            resources_string = line[4][1: len(line[4]) - 1]
-            resources_list = resources_string.split(',')
-            cpu = int(resources_list[0])
-            memory = int(resources_list[1])
-            buffer = int(resources_list[2])
+            resources = ast.literal_eval(line[4])
+            cpu = int(resources[0])
+            memory = int(resources[1])
+            buffer = int(resources[2])
 
             new_node = NodeObj(node_id, status, cpu, memory, buffer,
                                processing_delay, processing_cost)
@@ -85,7 +83,7 @@ def get_requests_from_file(filepath, nodes):
     requests = []
     sorted_nodes = sorted(nodes)
     with open(filepath) as f:
-        reader = csv.reader(f, ';')
+        reader = csv.reader(f, delimiter=';')
         next(reader, None)  # skip the first line
         for line in reader:
             request_id = int(line[0])
@@ -98,9 +96,11 @@ def get_requests_from_file(filepath, nodes):
             dest_node_index = int(line[2]) - 1
             dest_node = sorted_nodes[dest_node_index]
 
-            functions_string = line[3][1: len(line[3]) - 1]
-            functions_string_as_list = functions_string.split(',')
-
+            # Turn "['F4', 'F1', 'F3']" into a list using ast
+            # Then compile the requested resources of each function into a list
+            functions = ast.literal_eval(line[3])
+            functions_resources = get_requested_resources_from_functions(functions)
+            
     return requests
 
 
@@ -134,6 +134,8 @@ if __name__ == '__main__':
         print(node)
     for link in links:
         print(link)
+    requests_filepath = "../data/RequestInputData.txt"
+    requests = get_requests_from_file(requests_filepath, nodes)
 
     # Graph the nodes and links (we just need the IDs, not the objects)
     GRAPH = nx.Graph()
