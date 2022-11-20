@@ -81,7 +81,7 @@ def get_requests_from_file(filepath, nodes):
     :return:
     """
     requests = []
-    sorted_nodes = sorted(nodes)
+    sorted_nodes = sorted(nodes)  # sort nodes by index
     with open(filepath) as f:
         reader = csv.reader(f, delimiter=';')
         next(reader, None)  # skip the first line
@@ -96,7 +96,7 @@ def get_requests_from_file(filepath, nodes):
             dest_node_index = int(line[2]) - 1
             dest_node = sorted_nodes[dest_node_index]
 
-            # Turn "['F4', 'F1', 'F3']" into a list using ast
+            # Turn "['F4', 'F1', 'F3']" into a list using ast literal evaluation
             # Then compile the requested resources of each function into a list
             functions = ast.literal_eval(line[3])
             requested_resources = get_requested_resources_from_functions(functions)
@@ -121,11 +121,7 @@ def get_requested_resources_from_functions(functions):
     :param functions: list of functions
     :return: list of the requested resources for each function
     """
-    resources = []
-    for function in functions:
-        requested_resources = int(function[1])
-        resources.append(requested_resources)
-    return resources
+    return [int(function[1]) for function in functions]
 
 
 if __name__ == '__main__':
@@ -141,8 +137,8 @@ if __name__ == '__main__':
 
     # Graph the nodes and links (we just need the IDs, not the objects)
     GRAPH = nx.Graph()
-    graph_links = [[link.source_node.node_id, link.dest_node.node_id] for link in links]
-    graph_nodes = [node.node_id for node in nodes]
+    graph_links = [(link.source_node.node_id, link.dest_node.node_id) for link in links]
+    # graph_nodes = [node.node_id for node in nodes]
     GRAPH.add_edges_from(graph_links)
     nx.draw(GRAPH, with_labels=True, font_weight='bold')
     plt.show()
