@@ -1,23 +1,28 @@
 # network-simulation-single-mapping
 
-Simulates a traditional computer network that uses single mapping 
-(i.e., each node in the network can map only one function in a given request).
+Simulates a computer network that uses single mapping. 
+This network processes a list of requests, with each request composed of one or more functions to be run. 
+As a single mapping network, each node maps one function in a given request.
 
-
-The program takes in several input files to model the network: 
+This program has several components:
 <ol>
-  <li>a file that defines a list of nodes, each with an arbitrary ID, resources 
-    (CPU, Memory, and Buffer Size), processing delay, and processing cost.</li>
-  <li>a file that defines a list of links, each with an arbitrary ID, source and
-    destination node, bandwidth, edge delay, and edge cost.</li>
-  <li>a file that defines a list of requests, each with an arbitrary ID, source node,
-    destination node, requested resources (the CPU, Memory, and Buffer that will be 
-    allocated from a node between [source, destination]), and requested bandwidth (which
-    will be allocated from every link between source and destination).</li>
+  <li>
+    First, it models a computer network using the given input files LinkInputData and NodeInputData.
+    Each node is a computer and each link is a connection between two computers.
+    The network is graphed and displayed with NetworkX.
+  </li>
+  <li>
+    <b>TODO</b>: Then, it processes the file RequestsInputData. 
+    It runs the requests and outputs the requests that pass.
+  </li>
 </ol>
 
+The eventual goal of this program is to compare single mapping networks to other algorithms.
 
-The program uses networkx to graph the network.
+---------
 
-------------
-Eventually, the program will read in a list of requests and output the requests that pass.
+In this network, each node represents a computer with an ID, list of resources [CPU, Memory, Buffer Size], processing delay, and processing cost.
+
+Each link represents a connection with an ID, list of computers [source, destination node], bandwidth, edge delay, and edge cost.
+
+Each request has an ID, source node, destination node, list of requested resources to be allocated from some node between source and destination [CPU, Memory, Buffer cost], and requested bandwidth (which will be allocated from every link between source and destination).
