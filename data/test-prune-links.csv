@@ -1,0 +1,4 @@
+Link ID;Source;Destination;Bandwidth;Edge cost; Edge delay; Percent failure
+1;1;2;1000;0.4;5;0.58
+2;2;3;1000;0.3;5;0.15
+3;1;2;1000;0.4;5;0.41

@@ -110,7 +110,7 @@ def get_requests_from_file(filepath, nodes):
             # Requested resources indicates the CPU, Memory, and Buffer that
             # will be allocated from the node that processes this function.
             functions = ast.literal_eval(line[3])
-            requested_resources = [int(function[1]) for function in functions]
+            requested_resources = [int(function[1:]) for function in functions]
 
             new_request = RequestObj(request_id, source_node, dest_node,
                                      requested_resources, requested_bandwidth)
@@ -118,44 +118,84 @@ def get_requests_from_file(filepath, nodes):
     return requests
 
 
-def process_requests(graph, requests):
+def process_requests(request_objects, node_objects, link_objects):
     """
-    Process the list of requests. Map one function in each request to a node.
-    :param graph: a networkx graph with nodes and edges. Simulates a computer
-                network that processes requests
-    :param requests: a list of request objects
-    :return: the number of successful requests
+    Process requests through the network.
+    :param request_objects:
+    :param node_objects:
+    :param link_objects:
+    :return: number of successful requests
     """
     num_successes = 0
-
-    # TODO Prune the network by removing nodes and edges that aren't feasible (not enough resources or bandwidth).
-
-
-    for request in requests:
-        src = request.source_node
-        dest = request.dest_node
-        requested_resources = request.requested_resources  # [1,2,6]
-        requested_bandwidth = request.requested_bandwidth  # 5
-
-        # Need to find a path from src to dest.
-        # Because this is a single mapping network,
-        # len(path) must be at least len(requested_resources)
-
-        # If this request has three functions to map, then the path must have at
-        # least three nodes.
-
-        # Some nodes may map a function and some may not. Each node that maps a
-        # function will subtract a requested resource.
-        # cost of 1 means subtract 1 from (CPU, RAM, and buffer)
-
-        # Each link in the path will have the requested bandwidth subtracted.
+    for request in request_objects:
+        if process_one_request(request, node_objects, link_objects):
+            num_successes += 1
     return num_successes
+
+
+def process_one_request(request, node_objects, link_objects):
+    pruned_nodes, pruned_links = prune_network(request, node_objects, link_objects)
+
+    # For this basic demo, each request contains one function, and we're mapping
+    # this one function to the src node. (we're just testing prune_network, so
+    # there's no need to look at other nodes to map to). No bandwidth in this
+    # demo either, but I might test it later
+    src = request.source_node
+    for node in pruned_nodes:
+        if src == node:
+            node.cpu -= request.requested_resources[0]
+            node.memory -= request.requested_resources[0]
+            node.buffer -= request.requested_resources[0]
+            return True
+    print("src node not found")
+    return False
+
+
+def prune_network(request, node_objects, link_objects):
+    """
+    Not sure if this works yet. Prune out nodes and links that don't have enough
+    resources or bandwidth for this request.
+    :param request:         request
+    :param node_objects:    initial node objects
+    :param link_objects:    initial link objects
+    :return:                list of pruned node and pruned link objects
+    """
+    pruned_nodes = node_objects.copy()
+    pruned_links = link_objects.copy()
+
+    # The request contains a list of functions to map; find the minimum resource
+    # cost among this request's functions.
+    min_resources = min(request.requested_resources)
+
+    # Prune nodes that don't have enough resources to process this request.
+    for node in node_objects:
+        if node.cpu < min_resources:
+            pruned_nodes.remove(node)
+    # Prune links that are connected to pruned nodes.
+    for link in link_objects:
+        if link.source_node not in pruned_nodes or link.dest_node not in pruned_nodes:
+            pruned_links.remove(link)
+    # Prune links that don't have enough bandwidth to process this request.
+    for link in pruned_links:
+        if link.bandwidth < request.requested_bandwidth:
+            pruned_links.remove(link)
+
+    # Create a networkx.Graph using the pruned nodes and links.
+    graph = nx.Graph()
+    new_links = [(link.source_node.node_id, link.dest_node.node_id) for link in pruned_links]
+    graph.add_edges_from(new_links)
+    print(f"Request: {request}")
+    print(f"Pruned graph: {graph}")
+
+    # More useful to return the pruned nodes and links than the actual graph
+    return pruned_nodes, pruned_links
+
 
 if __name__ == '__main__':
     # Read input files and get the nodes and links
-    node_filepath = "../data/NodeInputData.csv"
+    node_filepath =  "../data/test-prune-nodes.csv" # "../data/NodeInputData.csv"
     nodes = get_nodes_from_file(node_filepath)
-    link_filepath = "../data/LinkInputData.csv"
+    link_filepath = "../data/test-prune-links.csv" # "../data/LinkInputData.csv"
     links = get_links_from_file(link_filepath, nodes)
     # for node in nodes:
     #     print(node)
@@ -169,14 +209,16 @@ if __name__ == '__main__':
     nx.draw(GRAPH, with_labels=True, font_weight='bold')
     plt.show()
 
-    print(GRAPH)
+    print(f"initial graph: {GRAPH}")
     print(GRAPH.nodes)
     print(GRAPH.edges)
 
     # Read input file and get the requests
-    requests_filepath = "../data/RequestInputData.txt"
+    requests_filepath = "../data/test-prune-requests.csv" # "../data/RequestInputData.txt"
     requests = get_requests_from_file(requests_filepath, nodes)
     # for request in requests:
     #     print(request)
+
+    process_requests(requests, nodes, links)
 
 

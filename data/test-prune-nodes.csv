@@ -1,0 +1,4 @@
+NodeId;Latitude;Longitude;Status;Resources[CPU, Memory, Physical Buffer Size];ProcessingDelay;NodeCost;PercentFailure
+1;156;184;A;[100, 100, 100];1;5;0.43
+2;392;559;A;[100, 100, 100];1;5;0.38
+3;590;189;A;[100, 100, 100];1;5;0.32
