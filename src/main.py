@@ -210,8 +210,6 @@ if __name__ == '__main__':
     plt.show()
 
     print(f"initial graph: {GRAPH}")
-    print(GRAPH.nodes)
-    print(GRAPH.edges)
 
     # Read input file and get the requests
     requests_filepath = "../data/test-prune-requests.csv" # "../data/RequestInputData.txt"
