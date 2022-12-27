@@ -1,5 +1,31 @@
 """
+This project models a computer network running Service Function Chain (SFC)
+Mapping. A computer network can be modeled as a graph with nodes (computers/client
+terminals) and links (connections between computers). The purpose of SFC mapping
+is to process requests from one client terminal to another. Each request has a
+source and destination terminal and a list of Virtual Network Functions (VNFs)
+to map. These VNFs can be mapped to/processed by any node between (and including)
+the source and destination, provided the node has enough resources and the links
+(between the source and mapping node) have enough bandwidth. Each VNF has a given
+resource cost and each request has a given bandwidth cost.
 
+This particular implementation of SFC mapping receives requests comprised of 1+
+VNFs, and each VNF is mapped to one and only one node between the request's src
+and dest (single mapping).
+
+SUPPORTING CLASSES/OBJECTS
+==========================
+Nodes are objects with the following fields:
+    n = <id, status, cpu, memory, buffer, processing_delay, processing_cost>
+        cpu, memory, and buffer are the computer's resources.
+
+Links are objects with the following fields:
+    l = <id, src, dest, bandwidth, edge_delay, edge_cost>
+
+Requests are objects with the following fields:
+    r = <id, src, dest, [requested_resources], requested_bandwidth>
+        requested_resources is a list of integers indicating the resources that
+        each VNF in this request needs
 """
 import ast
 import csv
@@ -11,6 +37,37 @@ from LinkObj import LinkObj
 from NodeObj import NodeObj
 from RequestObj import RequestObj
 
+def get_nodes_from_file(filepath):
+    """
+    Receive a csv file of nodes, return a list of node objects.
+    The csv file contains many columns but not all of them are used.
+    :param filepath:    csv file to process
+    :return:            list of node objects
+    """
+    nodes = []
+    with open(filepath) as f:
+        reader = csv.reader(f, delimiter=';')
+        next(reader, None)  # skip the first line
+        for line in reader:
+            node_id = int(line[0])
+            processing_delay = int(line[5])
+            processing_cost = int(line[6])
+
+            # 'A' means the node is active
+            if line[3] == 'A':
+                status = True
+            else:
+                status = False
+
+            resources = ast.literal_eval(line[4])
+            cpu = int(resources[0])
+            memory = int(resources[1])
+            buffer = int(resources[2])
+
+            new_node = NodeObj(node_id, status, cpu, memory, buffer,
+                               processing_delay, processing_cost)
+            nodes.append(new_node)
+    return nodes
 
 def get_links_from_file(filepath, nodes):
     """
@@ -44,45 +101,9 @@ def get_links_from_file(filepath, nodes):
     return links
 
 
-def get_nodes_from_file(filepath):
-    """
-    Receive a csv file of nodes, return a list of node objects.
-    :param filepath:    csv file to process
-    :return:            list of node objects
-    """
-    nodes = []
-    with open(filepath) as f:
-        reader = csv.reader(f, delimiter=';')
-        next(reader, None)  # skip the first line
-        for line in reader:
-            node_id = int(line[0])
-            processing_delay = int(line[5])
-            processing_cost = int(line[6])
-
-            # 'A' means the node is active
-            if line[3] == 'A':
-                status = True
-            else:
-                status = False
-
-            resources = ast.literal_eval(line[4])
-            cpu = int(resources[0])
-            memory = int(resources[1])
-            buffer = int(resources[2])
-
-            new_node = NodeObj(node_id, status, cpu, memory, buffer,
-                               processing_delay, processing_cost)
-            nodes.append(new_node)
-    return nodes
-
-
 def get_requests_from_file(filepath, nodes):
     """
     Receive a csv file of requests, return a list of request objects.
-    Requests are objects with the following fields:
-        r = <id, src, dest, [requested_resources], requested_bandwidth>
-        requested_resources is a list of integers indicating the resources that
-        each function in this request needs
     :param filepath:    csv file to process
     :param nodes:       list of node objects in the network. Needed to set src
                             and dest of each request.
@@ -121,10 +142,10 @@ def get_requests_from_file(filepath, nodes):
 def process_requests(request_objects, node_objects, link_objects):
     """
     Process requests through the network.
-    :param request_objects:
-    :param node_objects:
-    :param link_objects:
-    :return: number of successful requests
+    :param request_objects: [RequestObj(s)]
+    :param node_objects:    [NodeObj(s)]
+    :param link_objects:    [LinkObj(s)]
+    :return:                number of successful requests
     """
     num_successes = 0
     for request in request_objects:
@@ -153,12 +174,12 @@ def process_one_request(request, node_objects, link_objects):
 
 def prune_network(request, node_objects, link_objects):
     """
-    Not sure if this works yet. Prune out nodes and links that don't have enough
-    resources or bandwidth for this request.
-    :param request:         request
-    :param node_objects:    initial node objects
-    :param link_objects:    initial link objects
-    :return:                list of pruned node and pruned link objects
+    Given a request and a network of nodes and links, prune out nodes and
+    links that don't have enough resources or bandwidth for the request.
+    :param request:         RequestObj
+    :param node_objects:    initial NodeObj(s)
+    :param link_objects:    initial LinkObj(s)
+    :return:                [nodes with enough resources], [links with enough bandwidth]
     """
     pruned_nodes = node_objects.copy()
     pruned_links = link_objects.copy()
