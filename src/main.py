@@ -143,8 +143,8 @@ def process_requests(request_objects, node_objects, link_objects):
     """
     Process requests through the network.
     :param request_objects: [RequestObj(s)]
-    :param node_objects:    [NodeObj(s)]
-    :param link_objects:    [LinkObj(s)]
+    :param node_objects:    [NodeObj(s)] of the network
+    :param link_objects:    [LinkObj(s)] of the network
     :return:                number of successful requests
     """
     num_successes = 0
@@ -155,20 +155,36 @@ def process_requests(request_objects, node_objects, link_objects):
 
 
 def process_one_request(request, node_objects, link_objects):
-    pruned_nodes, pruned_links = prune_network(request, node_objects, link_objects)
+    """
+    Process one request through the network.
 
-    # For this basic demo, each request contains one function, and we're mapping
-    # this one function to the src node. (we're just testing prune_network, so
-    # there's no need to look at other nodes to map to). No bandwidth in this
-    # demo either, but I might test it later
-    src = request.source_node
-    for node in pruned_nodes:
-        if src == node:
-            node.cpu -= request.requested_resources[0]
-            node.memory -= request.requested_resources[0]
-            node.buffer -= request.requested_resources[0]
-            return True
-    print("src node not found")
+    (1) Create a pruned version of the network that can support this request.
+        The pruned version removes nodes and links with inadequate resources or bandwidth.
+        Pruned graph: G'(N', L')
+    (2) Compute K shortest paths over G'(N', L') between the request's source and
+        destination. These paths are given by a set of path vectors, P = {p},
+        each containing vectors of path nodes and links, i.e., p = {{n}, {l}}.
+    (3) The K path routes are then sorted/searched to find VNF mappings for a
+        single mapping strategy.
+    :param request:         RequestObj
+    :param node_objects:    [NodeObj(s)] of the network
+    :param link_objects:    [LinkObj(s)] of the network
+    :return:                True if the request was processed successfully
+    """
+    # (1)
+    pruned_nodes, pruned_links = prune_network(request, node_objects, link_objects)
+    pruned_graph = nx.Graph()
+    new_links = [(link.source_node.node_id, link.dest_node.node_id) for link in pruned_links]
+    pruned_graph.add_edges_from(new_links)
+
+    # (2) Note if there are no valid paths (empty list), then this request can't be processed
+    full_paths = get_path_vectors(pruned_graph, request)
+    if not full_paths:
+        return False
+
+    # (3)
+    # Is sorting the paths necessary? Each link has the same processing delay
+
     return False
 
 
@@ -201,27 +217,45 @@ def prune_network(request, node_objects, link_objects):
         if link.bandwidth < request.requested_bandwidth:
             pruned_links.remove(link)
 
-    # Create a networkx.Graph using the pruned nodes and links.
-    graph = nx.Graph()
-    new_links = [(link.source_node.node_id, link.dest_node.node_id) for link in pruned_links]
-    graph.add_edges_from(new_links)
-    print(f"Request: {request}")
-    print(f"Pruned graph: {graph}")
-
-    # More useful to return the pruned nodes and links than the actual graph
     return pruned_nodes, pruned_links
+
+
+def get_path_vectors(graph, request):
+    """
+    Using the given network/graph, return the k shortest paths for this request.
+    More specifically, this method returns path vectors, which are tuples in the
+    form: ([path], [path_links])
+        path has the nodes of the shortest path, e.g., [19, 5, 2, 16]
+        path_links has the links of the shortest path, e.g, [(19,5), (5,2), (2,16)]
+    :param graph:   graph representing the network processing this request
+    :param request: RequestObj to process
+    :return:        [path vectors]
+    """
+    paths = [p for p in nx.all_shortest_paths(graph,
+                                              source=request.source_node.node_id,
+                                              target=request.dest_node.node_id)]
+    # There are no shortest paths (should be impossible) or the shortest path is
+    # too short to process this request; return an empty path list.
+    if len(paths) == 0 or len(request.requested_resources) > len(paths[0]):
+        return []
+
+    path_links_list = []
+    for path in paths:
+        path_links = []
+        for i in range(0, len(path) - 1):
+            ls = path[i], path[i + 1]
+            path_links.append(ls)
+        path_links_list.append(path_links)
+
+    return zip(paths, path_links_list)
 
 
 if __name__ == '__main__':
     # Read input files and get the nodes and links
-    node_filepath =  "../data/test-prune-nodes.csv" # "../data/NodeInputData.csv"
+    node_filepath = "../data/NodeInputData.csv"
     nodes = get_nodes_from_file(node_filepath)
-    link_filepath = "../data/test-prune-links.csv" # "../data/LinkInputData.csv"
+    link_filepath = "../data/LinkInputData.csv"
     links = get_links_from_file(link_filepath, nodes)
-    # for node in nodes:
-    #     print(node)
-    # for link in links:
-    #     print(link)
 
     # Graph the nodes and links (we just need the IDs, not the objects)
     GRAPH = nx.Graph()
@@ -230,13 +264,9 @@ if __name__ == '__main__':
     nx.draw(GRAPH, with_labels=True, font_weight='bold')
     plt.show()
 
-    print(f"initial graph: {GRAPH}")
-
     # Read input file and get the requests
-    requests_filepath = "../data/test-prune-requests.csv" # "../data/RequestInputData.txt"
+    requests_filepath = "../data/RequestInputData.txt"
     requests = get_requests_from_file(requests_filepath, nodes)
-    # for request in requests:
-    #     print(request)
 
     process_requests(requests, nodes, links)
 
